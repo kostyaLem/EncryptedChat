@@ -11,6 +11,8 @@ namespace EncryptedChat.Server
 {
     class Server
     {
+        static object _consoleObj = new object();
+
         static TcpListener _listener;
         static List<ServerClient> _clients;
 
@@ -42,12 +44,12 @@ namespace EncryptedChat.Server
                 {
                     var client = _listener.AcceptTcpClient();
 
-                    //Task.Factory.StartNew(() =>
-                    //{
-                    ConnectedClient conClient;
-
-                    using (var sr = client.GetStream())
+                    Task.Factory.StartNew(() =>
                     {
+                        ConnectedClient conClient;
+
+                        var sr = client.GetStream();
+
                         var clientBytes = new List<byte>();
 
                         while (client.Connected)
@@ -70,7 +72,8 @@ namespace EncryptedChat.Server
                                 else
                                 {
                                     _clients.Add(new ServerClient(client, conClient.ID, conClient.Login));
-                                    SendToAllClients(new CustomMessage("HELLO", conClient));
+                                    WriteSignalConnection(conClient);
+                                    SendToAllClients(clientBytes.ToArray());
                                 }
 
                                 break;
@@ -88,16 +91,14 @@ namespace EncryptedChat.Server
                                     sr.Read(bytes, 0, bytes.Length);
                                     messageBytes.AddRange(bytes);
                                 } while (sr.DataAvailable);
-
                                 if (messageBytes.Count != 0)
                                 {
-                                    SendToAllClients(Extensions.DeserializeObject<CustomMessage>(messageBytes.ToArray()));
+                                    SendToAllClients(messageBytes.ToArray());
                                 }
                             }
                             catch { }
                         }
-                    }
-                    //});
+                    });
                 }
             }
             catch (Exception e)
@@ -106,21 +107,20 @@ namespace EncryptedChat.Server
             }
         }
 
-        static async void SendToAllClients(CustomMessage message)
+        static async void SendToAllClients(byte[] message)
         {
-            //await Task.Factory.StartNew(() =>
-            //{
-            lock (_clients)
+            await Task.Factory.StartNew(() =>
             {
-                foreach (var client in _clients)
+                lock (_clients)
                 {
-                    try
+                    foreach (var client in _clients)
                     {
-                        if (client.Client.Connected)
+                        try
                         {
-                            using (var sw = client.Client.GetStream())
+                            if (client.Client.Connected)
                             {
-                                using (var sr = new MemoryStream(Extensions.SerializeObject(message)))
+                                var sw = client.Client.GetStream();
+                                using (var sr = new MemoryStream(message))
                                 {
                                     while (sr.Position != sr.Length)
                                     {
@@ -132,19 +132,29 @@ namespace EncryptedChat.Server
                                     sw.Flush();
                                 }
                             }
+                            else continue;
                         }
-                        else continue;
-                    }
-                    catch
-                    {
+                        catch (Exception e)
+                        {
 
+                        }
                     }
+
+                    var deletedClients = _clients.Where(client => !client.Client.Connected).ToList();
+                    deletedClients.Select(c => _clients.Remove(c));
                 }
+            });
+        }
 
-                var deletedClients = _clients.Where(client => !client.Client.Connected).ToList();
-                deletedClients.Select(c => _clients.Remove(c));
+        private static void WriteSignalConnection(ConnectedClient connectedClient)
+        {
+            lock (_consoleObj)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"New connection:\t");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write($"{connectedClient.Login} - {connectedClient.Source}");
             }
-            //});
         }
     }
 }
