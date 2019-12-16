@@ -46,7 +46,7 @@
     <Compile Include="ClientModel\BaseClient.cs" />
     <Compile Include="ClientModel\ConnectedClient.cs" />
     <Compile Include="ClientModel\ServerClient.cs" />
-    <Compile Include="CustomMessage.cs" />
+    <Compile Include="EncryptedObject.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
