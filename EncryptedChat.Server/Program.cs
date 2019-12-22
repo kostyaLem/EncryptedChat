@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EncryptedChat.Server
@@ -42,6 +43,8 @@ namespace EncryptedChat.Server
         {
             try
             {
+                _listener.Server.ReceiveBufferSize = 1024 * 5;
+                _listener.Server.SendBufferSize = 1024 * 5;
                 _listener.Start();
             }
             catch (Exception e)
@@ -60,10 +63,11 @@ namespace EncryptedChat.Server
                     Task.Factory.StartNew(() =>
                     {
                         var stream = client.GetStream();
+                        var bf = new BinaryFormatter();
 
                         while (client.Connected)
                         {
-                            var conClient = (new BinaryFormatter().Deserialize(stream)) as ConnectedClient;
+                            var conClient = bf.Deserialize(stream) as ConnectedClient;
 
                             if (_clients.Exists(c => c.Login == conClient.Login))
                             {
@@ -72,8 +76,8 @@ namespace EncryptedChat.Server
                             else
                             {
                                 _clients.Add(new ServerClient(client, conClient.ID, conClient.Login));
-                                WriteSignalConnection(conClient);
-                                SendToAllClients(Extensions.SerializeObject(conClient));
+                                WriteSignalAboutConnection(conClient);
+                                SendToAllClients(conClient);
                             }
 
                             break;
@@ -82,15 +86,16 @@ namespace EncryptedChat.Server
                         while (client.Connected)
                         {
                             try
-                            {
-                                var encObject = (new BinaryFormatter().Deserialize(stream) as EncryptedObject);
+                            {                              
+                                var encObject = bf.Deserialize(stream) as EncryptedObject;
 
                                 WriteTextToConsole(encObject);
-                                SendToAllClients(Extensions.SerializeObject(encObject));
+                                SendToAllClients(encObject);
                             }
                             catch (Exception e)
                             {
                                 WriteExceptionToConsole(e);
+                                Thread.CurrentThread.Abort();
                             }
                         }
                     }, TaskCreationOptions.LongRunning);
@@ -102,18 +107,22 @@ namespace EncryptedChat.Server
             }
         }
 
-        static async void SendToAllClients(byte[] message)
+        static async void SendToAllClients(object serverObj)
         {
             await Task.Factory.StartNew(() =>
             {
                 lock (_clients)
                 {
+                    var bf = new BinaryFormatter();
                     foreach (var client in _clients.ToArray())
                     {
                         try
                         {
                             if (client.Client.Connected)
-                                client.Client.GetStream().Write(message, 0, message.Length);
+                            {                                
+                                bf.Serialize(client.Client.GetStream(), serverObj);
+                                Task.Delay(200).Wait();
+                            }
                             else
                             {
                                 _clients.Remove(client);
@@ -121,6 +130,8 @@ namespace EncryptedChat.Server
                         }
                         catch (Exception e)
                         {
+                            client.Client.Client.Disconnect(false);
+                            _clients.Remove(client);
                             WriteExceptionToConsole(e);
                         }
                     }
@@ -146,7 +157,7 @@ namespace EncryptedChat.Server
             }
         }
 
-        private static void WriteSignalConnection(ConnectedClient connectedClient)
+        private static void WriteSignalAboutConnection(ConnectedClient connectedClient)
         {
             lock (_consoleObj)
             {
