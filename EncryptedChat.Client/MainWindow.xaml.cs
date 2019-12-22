@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿using EncryptedChat.Client.ViewModels;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,6 +14,8 @@ namespace EncryptedChat.Client
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
+
             ((INotifyCollectionChanged)MessagesItems.ItemsSource).CollectionChanged += (s, e) => Scroller.ScrollToEnd();
         }
 

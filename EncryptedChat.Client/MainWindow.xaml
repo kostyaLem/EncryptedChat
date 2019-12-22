@@ -57,21 +57,23 @@
                     Height="23"
                     MinWidth="150"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="192.168.0.1" />
+                    Text="{Binding Host}" />
             </StackPanel>
             <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                 <Label Content="Port:" />
                 <TextBox
                     Width="70"
                     Height="23"
-                    Template="{StaticResource TextBoxBaseControlTemplate}" />
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding Port}" />
             </StackPanel>
             <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                 <Label Content="Login:" />
                 <TextBox
                     Width="100"
                     Height="23"
-                    Template="{StaticResource TextBoxBaseControlTemplate}" />
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding Login}" />
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
@@ -126,8 +128,11 @@
             <TextBox
                 VerticalContentAlignment="Center"
                 Template="{StaticResource TextBoxBaseControlTemplate}"
-                Text="qetewtqwet" />
-            <Button Grid.Column="1" Style="{StaticResource SendButton}" />
+                Text="{Binding Text}" />
+            <Button
+                Grid.Column="1"
+                Command="{Binding SendMessageCommand}"
+                Style="{StaticResource SendButton}" />
         </Grid>
     </Grid>
 </Window>

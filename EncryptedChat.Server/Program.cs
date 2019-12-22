@@ -1,10 +1,10 @@
 ﻿using EncryptedChat.Server.ClientModel;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace EncryptedChat.Server
@@ -21,8 +21,21 @@ namespace EncryptedChat.Server
             Console.WriteLine("Введите порт для прослушивания: ");
             var port = "5050";
 
-            _listener = new TcpListener(IPAddress.Any, int.Parse(port));
+            _listener = new TcpListener(GetLocalIPAddress(), int.Parse(port));
             _clients = new List<ServerClient>();
+        }
+
+        public static IPAddress GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip;
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
         static void Main(string[] args)
@@ -46,59 +59,41 @@ namespace EncryptedChat.Server
 
                     Task.Factory.StartNew(() =>
                     {
-                        ConnectedClient conClient;
-
-                        var sr = client.GetStream();
-
-                        var clientBytes = new List<byte>();
+                        var stream = client.GetStream();
 
                         while (client.Connected)
                         {
-                            do
+                            var conClient = (new BinaryFormatter().Deserialize(stream)) as ConnectedClient;
+
+                            if (_clients.Exists(c => c.Login == conClient.Login))
                             {
-                                var bytes = new byte[256];
-                                sr.Read(bytes, 0, bytes.Length);
-                                clientBytes.AddRange(bytes);
-                            } while (sr.DataAvailable && client.Connected);
 
-                            if (clientBytes.Count != 0 && client.Connected)
-                            {
-                                conClient = Extensions.DeserializeObject<ConnectedClient>(clientBytes.ToArray());
-
-                                if (_clients.Exists(c => c.ID == conClient.ID))
-                                {
-
-                                }
-                                else
-                                {
-                                    _clients.Add(new ServerClient(client, conClient.ID, conClient.Login));
-                                    WriteSignalConnection(conClient);
-                                    SendToAllClients(clientBytes.ToArray());
-                                }
-
-                                break;
                             }
+                            else
+                            {
+                                _clients.Add(new ServerClient(client, conClient.ID, conClient.Login));
+                                WriteSignalConnection(conClient);
+                                SendToAllClients(Extensions.SerializeObject(conClient));
+                            }
+
+                            break;
                         }
 
                         while (client.Connected)
                         {
                             try
                             {
-                                var messageBytes = new List<byte>();
-                                do
-                                {
-                                    var bytes = new byte[256];
-                                    sr.Read(bytes, 0, bytes.Length);
-                                    messageBytes.AddRange(bytes);
-                                } while (sr.DataAvailable);
-                                if (messageBytes.Count != 0)
-                                {
-                                    SendToAllClients(messageBytes.ToArray());
-                                }
+                                var encObject = (new BinaryFormatter().Deserialize(stream) as EncryptedObject);
+
+                                WriteTextToConsole(encObject);
+                                SendToAllClients(Extensions.SerializeObject(encObject));
                             }
-                            catch { }
+                            catch (Exception e)
+                            {
+                                WriteExceptionToConsole(e);
+                            }
                         }
-                    });
+                    }, TaskCreationOptions.LongRunning);
                 }
             }
             catch (Exception e)
@@ -113,30 +108,20 @@ namespace EncryptedChat.Server
             {
                 lock (_clients)
                 {
-                    foreach (var client in _clients)
+                    foreach (var client in _clients.ToArray())
                     {
                         try
                         {
                             if (client.Client.Connected)
+                                client.Client.GetStream().Write(message, 0, message.Length);
+                            else
                             {
-                                var sw = client.Client.GetStream();
-                                using (var sr = new MemoryStream(message))
-                                {
-                                    while (sr.Position != sr.Length)
-                                    {
-                                        var bytes = new byte[256];
-                                        sr.Read(bytes, 0, bytes.Length);
-                                        sw.Write(bytes, 0, bytes.Length);
-                                    }
-
-                                    sw.Flush();
-                                }
+                                _clients.Remove(client);
                             }
-                            else continue;
                         }
                         catch (Exception e)
                         {
-
+                            WriteExceptionToConsole(e);
                         }
                     }
 
@@ -146,14 +131,29 @@ namespace EncryptedChat.Server
             });
         }
 
+        private static void WriteExceptionToConsole(Exception e)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(e.Message);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        private static void WriteTextToConsole(EncryptedObject eObj)
+        {
+            lock (_consoleObj)
+            {
+                Console.WriteLine($"{eObj.Client.Login} [{eObj.Message.SendTime.ToString()}]: {eObj.Message.Content}");
+            }
+        }
+
         private static void WriteSignalConnection(ConnectedClient connectedClient)
         {
             lock (_consoleObj)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write($"New connection:\t");
+                Console.Write($"New connection: ");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write($"{connectedClient.Login} - {connectedClient.Source}");
+                Console.WriteLine($"{connectedClient.Login} - {connectedClient.Source}");
             }
         }
     }
