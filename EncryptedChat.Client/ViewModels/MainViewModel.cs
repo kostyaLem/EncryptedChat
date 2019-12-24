@@ -17,6 +17,7 @@ namespace EncryptedChat.Client.ViewModels
     {
         private TcpClient _tcpClient;
         private NetworkStream _stream;
+        private ConnectedClient _client;
 
         public string Host { get; set; } = "192.168.11.1";
         public int Port { get; set; } = 5050;
@@ -39,18 +40,9 @@ namespace EncryptedChat.Client.ViewModels
             DisconnectCommand = new DelegateCommand(() => { });
         }
 
-        private ConnectedClient _client;
-
-        public void OnPropertyChanged(string name = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
-
         private void Connect()
         {
             _tcpClient?.Close();
-
             _tcpClient = new TcpClient();
 
             try
@@ -64,7 +56,6 @@ namespace EncryptedChat.Client.ViewModels
             }
 
             _stream = _tcpClient.GetStream();
-
             _client = new ConnectedClient(GetLocalIPAddress().ToString(), Login);
 
             Task.Factory.StartNew(() =>
@@ -133,5 +124,12 @@ namespace EncryptedChat.Client.ViewModels
             }
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
+
+
+        public void OnPropertyChanged(string name = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
