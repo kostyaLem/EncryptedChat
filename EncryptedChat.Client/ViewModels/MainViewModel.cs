@@ -2,26 +2,23 @@
 using EncryptedChat.Server.ClientModel;
 using Prism.Commands;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Threading;
 
 namespace EncryptedChat.Client.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel : INotifyPropertyChanged
     {
         private TcpClient _tcpClient;
         private NetworkStream _stream;
 
-        public string Host { get; set; } = "192.168.0.60";
+        public string Host { get; set; } = "192.168.11.1";
         public int Port { get; set; } = 5050;
         public string Login { get; set; } = "kostyaLem";
         public string Text { get; set; }
@@ -43,12 +40,29 @@ namespace EncryptedChat.Client.ViewModels
         }
 
         private ConnectedClient _client;
+
+        public void OnPropertyChanged(string name = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private void Connect()
         {
             _tcpClient?.Close();
 
             _tcpClient = new TcpClient();
-            _tcpClient.Connect(Host, Port);
+
+            try
+            {
+                _tcpClient.Connect(Host, Port);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Ошибка подключения к серверу", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             _stream = _tcpClient.GetStream();
 
             _client = new ConnectedClient(GetLocalIPAddress().ToString(), Login);
@@ -92,10 +106,19 @@ namespace EncryptedChat.Client.ViewModels
 
         private void SendMessage()
         {
-            var message = new EncryptedObject(new Message(Text, DateTime.Now), _client);
-            new BinaryFormatter().Serialize(_stream, message);
+            try
+            {
+                var message = new EncryptedObject(new Message(Text, DateTime.Now), _client);
+                new BinaryFormatter().Serialize(_stream, message);
 
-            Text = string.Empty;
+                Text = string.Empty;
+                OnPropertyChanged(nameof(Text));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Ошибка отправки сообщения", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
         }
 
         private static IPAddress GetLocalIPAddress()

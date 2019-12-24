@@ -14,6 +14,20 @@
     Background="#FF2A2F33"
     WindowStyle="None"
     mc:Ignorable="d">
+    <Window.CommandBindings>
+        <CommandBinding
+            CanExecute="CanExecute"
+            Command="{x:Static SystemCommands.CloseWindowCommand}"
+            Executed="CloseWindow" />
+        <CommandBinding
+            CanExecute="CanExecute"
+            Command="{x:Static SystemCommands.MaximizeWindowCommand}"
+            Executed="MaximizeWindow" />
+        <CommandBinding
+            CanExecute="CanExecute"
+            Command="{x:Static SystemCommands.MinimizeWindowCommand}"
+            Executed="MinimizeWindow" />
+    </Window.CommandBindings>
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
@@ -44,9 +58,9 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Orientation="Horizontal">
-                <Button Content="___" />
-                <Button Content="⬜" />
-                <Button Content="X" />
+                <Button Command="{x:Static SystemCommands.MinimizeWindowCommand}" Content="___" />
+                <Button Command="{x:Static SystemCommands.MaximizeWindowCommand}" Content="⬜" />
+                <Button Command="{x:Static SystemCommands.CloseWindowCommand}" Content="X" />
             </WrapPanel>
         </DockPanel>
 

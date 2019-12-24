@@ -19,6 +19,29 @@ namespace EncryptedChat.Client
             ((INotifyCollectionChanged)MessagesItems.ItemsSource).CollectionChanged += (s, e) => Scroller.ScrollToEnd();
         }
 
+        private void CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void CloseWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.CloseWindow(this);
+        }
+
+        private void MaximizeWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (WindowState == WindowState.Normal)
+                SystemCommands.MaximizeWindow(this);
+            else
+                SystemCommands.RestoreWindow(this);
+        }
+
+        private void MinimizeWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            SystemCommands.MinimizeWindow(this);
+        }
+
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Application.Current.MainWindow.DragMove();

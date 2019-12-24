@@ -1,5 +1,10 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:EncryptedChat.Client.Resources">
-    <DropShadowEffect x:Key="DefaultShadow" Color="#FFFFFDFD" ShadowDepth="2.5" BlurRadius="2"/>
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:EncryptedChat.Client.Resources">
+    <DropShadowEffect
+        x:Key="DefaultShadow"
+        BlurRadius="2"
+        ShadowDepth="2.5"
+        Color="#FFFFFDFD" />
 </ResourceDictionary>

@@ -19,10 +19,11 @@ namespace EncryptedChat.Server
 
         static Server()
         {
-            Console.WriteLine("Введите порт для прослушивания: ");
-            var port = "5050";
+            var host = GetLocalIPAddress();
+            var port = 5050;            
+            Console.WriteLine($"Введите порт для прослушивания: {host}:{port}");
 
-            _listener = new TcpListener(GetLocalIPAddress(), int.Parse(port));
+            _listener = new TcpListener(host, 5050);
             _clients = new List<ServerClient>();
         }
 

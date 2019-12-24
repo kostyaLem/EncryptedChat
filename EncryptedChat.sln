@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptedChat.Server", "EncryptedChat.Server\EncryptedChat.Server.csproj", "{9C8E2C26-0D3B-4975-A7C1-ED28045E4E0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{F3FD2017-0888-4F6F-AD6C-5ECDA87AD1E7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptedChat.Client", "EncryptedChat.Client\EncryptedChat.Client.csproj", "{4905EDF5-3484-41C1-970A-2679D5650FEA}"
 EndProject
 Global
@@ -19,10 +17,6 @@ Global
 		{9C8E2C26-0D3B-4975-A7C1-ED28045E4E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C8E2C26-0D3B-4975-A7C1-ED28045E4E0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C8E2C26-0D3B-4975-A7C1-ED28045E4E0A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F3FD2017-0888-4F6F-AD6C-5ECDA87AD1E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3FD2017-0888-4F6F-AD6C-5ECDA87AD1E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3FD2017-0888-4F6F-AD6C-5ECDA87AD1E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3FD2017-0888-4F6F-AD6C-5ECDA87AD1E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4905EDF5-3484-41C1-970A-2679D5650FEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4905EDF5-3484-41C1-970A-2679D5650FEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4905EDF5-3484-41C1-970A-2679D5650FEA}.Release|Any CPU.ActiveCfg = Release|Any CPU

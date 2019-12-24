@@ -8,8 +8,8 @@ namespace EncryptedChat.Server
 	{
 		public EncryptedObject(Message message, ConnectedClient client)
 		{
-			Message = message ?? throw new ArgumentNullException(nameof(message));
-			Client = client ?? throw new ArgumentNullException(nameof(client));
+			Message = message;
+			Client = client;
 		}
 
 		public Message Message { get; }
@@ -21,7 +21,7 @@ namespace EncryptedChat.Server
 	{
 		public Message(string content, DateTime sendTime)
 		{
-			Content = content ?? throw new ArgumentNullException(nameof(content));
+			Content = content;
 			SendTime = sendTime;
 		}
 
