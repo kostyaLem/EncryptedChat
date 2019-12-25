@@ -54,6 +54,35 @@
                     <GradientStop Color="#FF39AE9E" />
                 </LinearGradientBrush>
             </DockPanel.Background>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="p:" />
+                <TextBox
+                    Width="80"
+                    Height="23"
+                    IsReadOnly="True"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding PublicP, Mode=OneWay}" />
+                <Label Content="q:" />
+                <TextBox
+                    Width="80"
+                    Height="23"
+                    IsReadOnly="True"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding PublicQ, Mode=OneWay}" />
+                <Label Content="n:" />
+                <TextBox
+                    Width="100"
+                    Height="22"
+                    IsReadOnly="True"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding PublicN, Mode=OneWay}" />
+                <Label Content="Open key (B):" />
+                <TextBox
+                    Width="100"
+                    Height="20"
+                    Template="{StaticResource TextBoxBaseControlTemplate}"
+                    Text="{Binding PublicB}" />
+            </StackPanel>
             <WrapPanel
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
@@ -94,10 +123,12 @@
                 <Button
                     Command="{Binding DisconnectCommand}"
                     Content="Disconnect"
+                    IsEnabled="{Binding CanDisconnect}"
                     Style="{StaticResource CommandButton}" />
                 <Button
                     Command="{Binding ConnectCommand}"
                     Content="Connect"
+                    IsEnabled="{Binding CanConnect}"
                     Style="{StaticResource CommandButton}" />
             </StackPanel>
         </DockPanel>

@@ -32,7 +32,6 @@
 
     <Style
         x:Key="SendButton"
-        x:Name="qer"
         TargetType="Button">
         <Setter Property="MinWidth" Value="70" />
         <Setter Property="Margin" Value="5" />

@@ -7,25 +7,48 @@ namespace Encrypted
 {
     public class RSA
     {
-        public List<string> Encrypt(long p, long q, string text)
+        private bool _isReady;
+        private long local_D;
+
+        public long p;
+        public long q;
+        public long n;
+        public long e;
+
+        public RSA()
         {
-            if (p.IsSimpleNum() && q.IsSimpleNum())
-            {
-                var n = p * q;
-                var fi = (p - 1) * (q - 1);
-
-                long d = GetPrivatePartKey(fi);
-                long e = GetPublicPartKey(d, fi);
-
-                return Encode(text, e, n);
-            }
-            else
-                throw new ArgumentException("p or n is't simple numbers");
+            Initialize();
         }
 
-        public string Decrypt(long d, long n, List<string> data)
+        public void Initialize()
         {
-            return Decode(data, d, n);
+            p = PrimeNumberGenerator.Generate(); 
+            q = PrimeNumberGenerator.Generate();
+
+            n = p * q;
+
+            var fi = (p - 1) * (q - 1);
+
+            local_D = GetPrivatePartKey(fi);
+            e = GetPublicPartKey(local_D, fi);
+
+            _isReady = true;
+        }
+
+        public List<string> Encrypt(string text)
+        {
+            if (!_isReady)
+                throw new ArgumentException("Method Initialize not called");
+
+            return Encode(text, e, n);
+        }
+
+        public string Decrypt(List<string> data)
+        {
+            if (!_isReady)
+                throw new ArgumentException("Method Initialize not called");
+
+            return Decode(data, local_D, n);
         }
 
         private List<string> Encode(string text, long e, long n)

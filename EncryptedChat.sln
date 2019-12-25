@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptedChat.Client", "Enc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Encrypted", "RSA\Encrypted.csproj", "{62446AC5-6DEC-495A-8010-B34EF9C521CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Encrypted.RSADemo", "Encrypted.RSADemo\Encrypted.RSADemo.csproj", "{AD575EE0-2993-4F1E-8B2D-F9433CAB86E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{62446AC5-6DEC-495A-8010-B34EF9C521CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62446AC5-6DEC-495A-8010-B34EF9C521CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62446AC5-6DEC-495A-8010-B34EF9C521CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD575EE0-2993-4F1E-8B2D-F9433CAB86E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD575EE0-2993-4F1E-8B2D-F9433CAB86E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD575EE0-2993-4F1E-8B2D-F9433CAB86E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD575EE0-2993-4F1E-8B2D-F9433CAB86E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

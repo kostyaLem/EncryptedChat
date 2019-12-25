@@ -125,6 +125,10 @@
       <Project>{9C8E2C26-0D3B-4975-A7C1-ED28045E4E0A}</Project>
       <Name>EncryptedChat.Server</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RSA\Encrypted.csproj">
+      <Project>{62446AC5-6DEC-495A-8010-B34EF9C521CA}</Project>
+      <Name>Encrypted</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\sendIco.png" />

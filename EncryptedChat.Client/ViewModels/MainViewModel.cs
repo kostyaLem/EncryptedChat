@@ -1,4 +1,5 @@
-﻿using EncryptedChat.Server;
+﻿using Encrypted;
+using EncryptedChat.Server;
 using EncryptedChat.Server.ClientModel;
 using Prism.Commands;
 using System;
@@ -15,9 +16,16 @@ namespace EncryptedChat.Client.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        private RSA _rsa = new RSA();
+
         private TcpClient _tcpClient;
         private NetworkStream _stream;
         private ConnectedClient _client;
+
+        public long PublicP => _rsa.p;
+        public long PublicQ => _rsa.q;
+        public long PublicN => _rsa.n;
+        public long PublicB { get; set; }
 
         public string Host { get; set; } = "192.168.11.1";
         public int Port { get; set; } = 5050;
@@ -26,6 +34,9 @@ namespace EncryptedChat.Client.ViewModels
 
         public bool Connected { get; set; }
         public ObservableCollection<EncryptedObject> Messages { get; set; }
+
+        public bool CanConnect { get; set; } = true;
+        public bool CanDisconnect { get; set; } = false;
 
         public DelegateCommand SendMessageCommand { get; set; }
         public DelegateCommand ConnectCommand { get; set; }
@@ -36,8 +47,16 @@ namespace EncryptedChat.Client.ViewModels
             Messages = new ObservableCollection<EncryptedObject>();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
-            ConnectCommand = new DelegateCommand(Connect);
-            DisconnectCommand = new DelegateCommand(() => { });
+            ConnectCommand = new DelegateCommand(Connect, () => CanConnect);
+            DisconnectCommand = new DelegateCommand(Fake, () => CanDisconnect);
+        }
+
+        private void Fake()
+        {
+            _tcpClient?.Close();
+            CanConnect = true;
+            CanDisconnect = false;
+            OnPropertyChanged();
         }
 
         private void Connect()
@@ -75,7 +94,10 @@ namespace EncryptedChat.Client.ViewModels
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
+                                    CanConnect = false;
+                                    CanDisconnect = true;
                                     Messages.Add(new EncryptedObject(new Message($@"Новое подключение: {conClient.Login}", DateTime.Now), conClient));
+                                    OnPropertyChanged();
                                 }, DispatcherPriority.Background);
                             }
                             else if (serverObject is EncryptedObject encObj)
@@ -91,6 +113,9 @@ namespace EncryptedChat.Client.ViewModels
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    CanConnect = true;
+                    CanDisconnect = false;
+                    OnPropertyChanged();
                 }
             }, TaskCreationOptions.LongRunning);
         }
