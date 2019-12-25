@@ -20,7 +20,7 @@ namespace EncryptedChat.Server
         static Server()
         {
             var host = GetLocalIPAddress();
-            var port = 5050;            
+            var port = 5050;
             Console.WriteLine($"Введите порт для прослушивания: {host}:{port}");
 
             _listener = new TcpListener(host, 5050);
@@ -65,6 +65,7 @@ namespace EncryptedChat.Server
                     {
                         var stream = client.GetStream();
                         var bf = new BinaryFormatter();
+                        var serverClient = new ServerClient();
 
                         while (client.Connected)
                         {
@@ -72,11 +73,12 @@ namespace EncryptedChat.Server
 
                             if (_clients.Exists(c => c.Login == conClient.Login))
                             {
-
+                                // Write to console about it
                             }
                             else
                             {
-                                _clients.Add(new ServerClient(client, conClient.ID, conClient.Login));
+                                serverClient = new ServerClient(client, conClient.ID, conClient.Login);
+                                _clients.Add(serverClient);
                                 WriteSignalAboutConnection(conClient);
                                 SendToAllClients(conClient);
                             }
@@ -84,10 +86,10 @@ namespace EncryptedChat.Server
                             break;
                         }
 
-                        while (client.Connected)
+                        while (client.Client.Connected)
                         {
                             try
-                            {                              
+                            {
                                 var encObject = bf.Deserialize(stream) as EncryptedObject;
 
                                 WriteTextToConsole(encObject);
@@ -95,10 +97,22 @@ namespace EncryptedChat.Server
                             }
                             catch (Exception e)
                             {
+                                if (client.Client.Poll(0, SelectMode.SelectRead))
+                                {
+                                    var buff = new byte[1];
+                                    if (client.Client.Receive(buff, SocketFlags.Peek) == 0)
+                                    {
+                                        client.Client.Disconnect(true);
+                                    }
+                                }
+
                                 WriteExceptionToConsole(e);
+                                _clients.RemoveAll(x => !x.Client.Connected);
                                 Thread.CurrentThread.Abort();
                             }
                         }
+
+                        _clients.Remove(serverClient);
                     }, TaskCreationOptions.LongRunning);
                 }
             }
@@ -120,9 +134,8 @@ namespace EncryptedChat.Server
                         try
                         {
                             if (client.Client.Connected)
-                            {                                
+                            {
                                 bf.Serialize(client.Client.GetStream(), serverObj);
-                                Task.Delay(200).Wait();
                             }
                             else
                             {
@@ -136,9 +149,6 @@ namespace EncryptedChat.Server
                             WriteExceptionToConsole(e);
                         }
                     }
-
-                    var deletedClients = _clients.Where(client => !client.Client.Connected).ToList();
-                    deletedClients.Select(c => _clients.Remove(c));
                 }
             });
         }

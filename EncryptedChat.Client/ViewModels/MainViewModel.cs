@@ -47,8 +47,15 @@ namespace EncryptedChat.Client.ViewModels
             Messages = new ObservableCollection<EncryptedObject>();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
-            ConnectCommand = new DelegateCommand(Connect, () => CanConnect);
-            DisconnectCommand = new DelegateCommand(Fake, () => CanDisconnect);
+            ConnectCommand = new DelegateCommand(Connect);
+            DisconnectCommand = new DelegateCommand(Fake);
+
+            Application.Current.MainWindow.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            Fake();
         }
 
         private void Fake()
@@ -92,6 +99,7 @@ namespace EncryptedChat.Client.ViewModels
 
                             if (serverObject is ConnectedClient conClient)
                             {
+
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     CanConnect = false;
