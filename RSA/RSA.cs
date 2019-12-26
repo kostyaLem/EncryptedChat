@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 
@@ -7,6 +8,8 @@ namespace Encrypted
 {
     public class RSA
     {
+        public List<char> _chars = new List<char>();
+
         private bool _isReady;
         private long local_D;
 
@@ -18,32 +21,41 @@ namespace Encrypted
         public RSA()
         {
             Initialize();
+            FillAlp();
+        }
+
+        private void FillAlp()
+        {
+            _chars.AddRange(Enumerable.Range('А', 'я' - 'А' + 1).Select(c => (char)c).ToArray());
+            _chars.AddRange(Enumerable.Range('A', 'Z' - 'A' + 1).Select(c => (char)c).ToArray());
+            _chars.AddRange(Enumerable.Range('a', 'z' - 'a' + 1).Select(c => (char)c).ToArray());
+            _chars.AddRange(new char[] { '.', ',', '!', '?', '(', ')', '-', '@', '"', '\'', ';', ':', ' ' });
         }
 
         public void Initialize()
         {
-            p = PrimeNumberGenerator.Generate(); 
+            p = PrimeNumberGenerator.Generate();
             q = PrimeNumberGenerator.Generate();
 
             n = p * q;
 
             var fi = (p - 1) * (q - 1);
 
-            local_D = GetPrivatePartKey(fi);
-            e = GetPublicPartKey(local_D, fi);
+            e = GetPublicPartKey(fi);
+            local_D = GetPrivatePartKey(fi, e);
 
             _isReady = true;
         }
 
-        public List<string> Encrypt(string text)
+        public string[] Encrypt(string text, long publicE, long publicN)
         {
             if (!_isReady)
                 throw new ArgumentException("Method Initialize not called");
 
-            return Encode(text, e, n);
+            return Encode(text, publicE, publicN);
         }
 
-        public string Decrypt(List<string> data)
+        public string Decrypt(string[] data)
         {
             if (!_isReady)
                 throw new ArgumentException("Method Initialize not called");
@@ -51,7 +63,7 @@ namespace Encrypted
             return Decode(data, local_D, n);
         }
 
-        private List<string> Encode(string text, long e, long n)
+        private string[] Encode(string text, long e, long n)
         {
             var data = new List<string>();
 
@@ -59,21 +71,19 @@ namespace Encrypted
 
             foreach (var ch in text)
             {
-                int index = ch;
+                int index = _chars.IndexOf(ch);
 
-                num = new BigInteger(index);
-                num = BigInteger.Pow(num, (int)e);
-
-                BigInteger mod = new BigInteger((int)n);
-                num = num % mod;
+                num = BigInteger.ModPow(index, e, n);
 
                 data.Add(num.ToString());
             }
 
-            return data;
+            return data.ToArray();
         }
 
-        private string Decode(List<string> data, long d, long n)
+        private static object sync = new object();
+
+        private string localDecode(string[] data)
         {
             var strBuilder = new StringBuilder();
 
@@ -81,45 +91,62 @@ namespace Encrypted
 
             foreach (var item in data)
             {
-                num = new BigInteger(Convert.ToInt64(item));
-                num = BigInteger.Pow(num, (int)d);
+                var val = new BigInteger(Convert.ToInt64(item));
 
-                var mod = new BigInteger((int)n);
-                num = num % mod;
+                num = BigInteger.ModPow(val, e, n);
 
-                int index = Convert.ToInt32(num.ToString());
-
-                strBuilder.Append((char)index);
+                strBuilder.Append(_chars[(int)num]);
             }
 
             return strBuilder.ToString();
         }
 
-        private long GetPrivatePartKey(long fi)
+        private string Decode(string[] data, long d, long n)
         {
-            long d = fi - 1;
-
-            for (long i = 2; i <= fi; i++)
+            lock (sync)
             {
-                if ((fi % i == 0) && (d % i == 0))
+                var strBuilder = new StringBuilder();
+
+                BigInteger num;
+
+                foreach (var item in data)
                 {
-                    d--;
-                    i = 1;
+                    var val = new BigInteger(Convert.ToInt64(item));
+
+                    num = BigInteger.ModPow(val, d, n);
+
+                    strBuilder.Append(_chars[(int)num]);
                 }
+
+                return strBuilder.ToString();
             }
-            return d;
         }
 
-        private long GetPublicPartKey(long d, long fi)
+        private long GetPrivatePartKey(long fi, long e)
         {
-            long e = 10;
+            long d = e + 1;
 
             while (true)
             {
-                if ((e * d) % fi == 1)
+                if ((d * e) % fi == 1)
                     break;
-                else
-                    e++;
+                d++;
+            }
+
+            return d;
+        }
+
+        private long GetPublicPartKey(long fi)
+        {
+            long e = 3;
+
+            while (true)
+            {
+                if (PrimeNumberGenerator.IsPrime(e) &&
+                    e < fi &&
+                    BigInteger.GreatestCommonDivisor(new BigInteger(e), new BigInteger(fi)) == BigInteger.One)
+                    break;
+                e++;
             }
 
             return e;

@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace EncryptedChat.Client
@@ -45,6 +46,21 @@ namespace EncryptedChat.Client
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Application.Current.MainWindow.DragMove();
+        }
+
+        // Not correct
+        private void TextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            var text = (sender as TextBox).Text;
+            var result = string.Empty;
+            
+            foreach(var ch in text)
+            {
+                if (char.IsDigit(ch))
+                    result += ch;
+            }
+
+            (sender as TextBox).Text = result;
         }
     }
 }

@@ -22,20 +22,26 @@ namespace EncryptedChat.Client.ViewModels
         private NetworkStream _stream;
         private ConnectedClient _client;
 
-        public long PublicP => _rsa.p;
-        public long PublicQ => _rsa.q;
-        public long PublicN => _rsa.n;
-        public long PublicB { get; set; }
+        #region Keys
+        public int LocalE => (int)_rsa.e;
+        public int LocalN => (int)_rsa.n;
+
+        public int RemoteE { get => remoteE; set { remoteE = value; OnPropertyChanged(); } }
+        public int RemoteN { get => remoteN; set { remoteN = value; OnPropertyChanged(); } }
+        #endregion
 
         public string Host { get; set; } = "192.168.11.1";
         public int Port { get; set; } = 5050;
         public string Login { get; set; } = "kostyaLem";
         public string Text { get; set; }
 
-        public bool Connected { get; set; }
-        public ObservableCollection<EncryptedObject> Messages { get; set; }
+        public bool Connected => RemoteE != 0 && RemoteN != 0 && _canConnect;
+        public ObservableCollection<MessageItem> Messages { get; set; }
 
-        public bool CanConnect { get; set; } = true;
+        private bool _canConnect = true;
+        private int remoteE;
+        private int remoteN;
+
         public bool CanDisconnect { get; set; } = false;
 
         public DelegateCommand SendMessageCommand { get; set; }
@@ -44,7 +50,7 @@ namespace EncryptedChat.Client.ViewModels
 
         public MainViewModel()
         {
-            Messages = new ObservableCollection<EncryptedObject>();
+            Messages = new ObservableCollection<MessageItem>();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             ConnectCommand = new DelegateCommand(Connect);
@@ -61,7 +67,7 @@ namespace EncryptedChat.Client.ViewModels
         private void Fake()
         {
             _tcpClient?.Close();
-            CanConnect = true;
+            _canConnect = true;
             CanDisconnect = false;
             OnPropertyChanged();
         }
@@ -99,20 +105,23 @@ namespace EncryptedChat.Client.ViewModels
 
                             if (serverObject is ConnectedClient conClient)
                             {
-
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    CanConnect = false;
+                                    _canConnect = false;
                                     CanDisconnect = true;
-                                    Messages.Add(new EncryptedObject(new Message($@"Новое подключение: {conClient.Login}", DateTime.Now), conClient));
                                     OnPropertyChanged();
                                 }, DispatcherPriority.Background);
                             }
                             else if (serverObject is EncryptedObject encObj)
                             {
+                                if (encObj.Client.Login == _client.Login)
+                                    continue;
+
+                                var text = _rsa.Decrypt(encObj.Message.Content);
+
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    Messages.Add(encObj);
+                                    Messages.Add(encObj.MapEncObjToMessageItem(text));
                                 }, DispatcherPriority.Background);
                             }
                         }
@@ -121,7 +130,7 @@ namespace EncryptedChat.Client.ViewModels
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    CanConnect = true;
+                    _canConnect = true;
                     CanDisconnect = false;
                     OnPropertyChanged();
                 }
@@ -132,7 +141,14 @@ namespace EncryptedChat.Client.ViewModels
         {
             try
             {
-                var message = new EncryptedObject(new Message(Text, DateTime.Now), _client);
+                var data = _rsa.Encrypt(Text, RemoteE, RemoteN);
+
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    Messages.Add(new MessageItem() { Login = _client.Login, Content = Text, SendTime = DateTime.Now });
+                });
+
+                var message = new EncryptedObject(new Message(data, DateTime.Now), _client);
                 new BinaryFormatter().Serialize(_stream, message);
 
                 Text = string.Empty;

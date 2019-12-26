@@ -11,7 +11,7 @@ namespace Encrypted
         {
             var values = new List<int>();
 
-            int left = 200, right = 1000;
+            int left = 50, right = 300;
             while (left++ < right)
             {
                 if (IsPrime(left))
@@ -21,7 +21,7 @@ namespace Encrypted
             return values[_random.Next(0, values.Count)];
         }
 
-        private static bool IsPrime(int n)
+        public static bool IsPrime(long n)
         {
             if (n == 1)
                 return false;

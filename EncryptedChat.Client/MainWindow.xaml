@@ -51,33 +51,34 @@
                 </LinearGradientBrush>
             </DockPanel.Background>
             <StackPanel Orientation="Horizontal">
-                <Label Content="p:" />
+                <Label Content="e(A):" />
                 <TextBox
                     Width="80"
                     Height="23"
                     IsReadOnly="True"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding PublicP, Mode=OneWay}" />
-                <Label Content="q:" />
+                    Text="{Binding LocalE, Mode=OneWay}" />
+                <Label Content="n(A):" />
                 <TextBox
                     Width="80"
                     Height="23"
                     IsReadOnly="True"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding PublicQ, Mode=OneWay}" />
-                <Label Content="n:" />
+                    Text="{Binding LocalN, Mode=OneWay}" />
+                <Label Content="e(B):" />
                 <TextBox
-                    Width="100"
+                    Width="80"
                     Height="22"
-                    IsReadOnly="True"
+                    IsReadOnly="{Binding CanDisconnect}"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding PublicN, Mode=OneWay}" />
-                <Label Content="Open key (B):" />
+                    Text="{Binding RemoteE}" />
+                <Label Content="n(B):" />
                 <TextBox
-                    Width="100"
-                    Height="20"
+                    Width="80"
+                    Height="22"
+                    IsReadOnly="{Binding CanDisconnect}"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding PublicB}" />
+                    Text="{Binding RemoteN}" />
             </StackPanel>
             <WrapPanel
                 HorizontalAlignment="Right"
@@ -124,7 +125,7 @@
                 <Button
                     Command="{Binding ConnectCommand}"
                     Content="Connect"
-                    IsEnabled="{Binding CanConnect}"
+                    IsEnabled="{Binding Connected}"
                     Style="{StaticResource CommandButton}" />
             </StackPanel>
         </DockPanel>
@@ -140,8 +141,8 @@
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel MinWidth="120">
-                                    <TextBlock Style="{StaticResource AuthorStyle}" Text="{Binding Path=Client.Login}" />
-                                    <TextBlock Style="{StaticResource SendTimeStyle}" Text="{Binding Path=Message.SendTime, Converter={StaticResource DateTimeConverter}}" />
+                                    <TextBlock Style="{StaticResource AuthorStyle}" Text="{Binding Path=Login}" />
+                                    <TextBlock Style="{StaticResource SendTimeStyle}" Text="{Binding Path=SendTime, Converter={StaticResource DateTimeConverter}}" />
                                 </StackPanel>
                                 <Border
                                     Grid.Column="1"
@@ -151,7 +152,7 @@
                                     BorderBrush="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Background}"
                                     BorderThickness="4"
                                     CornerRadius="4">
-                                    <TextBlock Style="{StaticResource MessageStyle}" Text="{Binding Path=Message.Content}" />
+                                    <TextBlock Style="{StaticResource MessageStyle}" Text="{Binding Path=Content}" />
                                 </Border>
                             </Grid>
                         </DataTemplate>

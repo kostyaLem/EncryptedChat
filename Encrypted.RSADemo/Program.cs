@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Encrypted.RSADemo
 {
@@ -10,13 +6,14 @@ namespace Encrypted.RSADemo
     {
         static void Main(string[] args)
         {
-            var rsa = new RSA();
-            int p = 101, q = 103;
+            var client1 = new RSA();
+            var client2 = new RSA();
 
-            string text = "Привет";
+            string text = "Привет всем. Суки!";
 
-            var data = rsa.Encrypt(p, q, text);
-            var result = rsa.Decrypt(10199, 10403, data);
+            var data = client2.Encrypt(text, client1.e, client1.n);
+
+            var result = client1.Decrypt(data);
 
             Console.ReadKey();
         }
