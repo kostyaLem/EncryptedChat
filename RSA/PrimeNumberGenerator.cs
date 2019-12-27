@@ -11,7 +11,7 @@ namespace Encrypted
         {
             var values = new List<int>();
 
-            int left = 50, right = 300;
+            int left = 500, right = 1500;
             while (left++ < right)
             {
                 if (IsPrime(left))

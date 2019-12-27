@@ -164,7 +164,9 @@ namespace EncryptedChat.Server
         {
             lock (_consoleObj)
             {
-                Console.WriteLine($"{eObj.Client.Login} [{eObj.Message.SendTime.ToString()}]: {eObj.Message.Content}");
+                Console.WriteLine($"{eObj.Client.Login} " +
+                    $"[{eObj.Message.SendTime.ToString()}]: " +
+                    $"{string.Join(" ", eObj.Message.Content)}");
             }
         }
 

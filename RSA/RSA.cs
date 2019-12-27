@@ -29,6 +29,7 @@ namespace Encrypted
             _chars.AddRange(Enumerable.Range('А', 'я' - 'А' + 1).Select(c => (char)c).ToArray());
             _chars.AddRange(Enumerable.Range('A', 'Z' - 'A' + 1).Select(c => (char)c).ToArray());
             _chars.AddRange(Enumerable.Range('a', 'z' - 'a' + 1).Select(c => (char)c).ToArray());
+            _chars.AddRange(Enumerable.Range('0', '9' - '0' + 1).Select(c => (char)c).ToArray());
             _chars.AddRange(new char[] { '.', ',', '!', '?', '(', ')', '-', '@', '"', '\'', ';', ':', ' ' });
         }
 
@@ -71,7 +72,7 @@ namespace Encrypted
 
             foreach (var ch in text)
             {
-                int index = _chars.IndexOf(ch);
+                int index = ch;
 
                 num = BigInteger.ModPow(index, e, n);
 
@@ -92,9 +93,7 @@ namespace Encrypted
             foreach (var item in data)
             {
                 var val = new BigInteger(Convert.ToInt64(item));
-
                 num = BigInteger.ModPow(val, e, n);
-
                 strBuilder.Append(_chars[(int)num]);
             }
 
@@ -112,10 +111,9 @@ namespace Encrypted
                 foreach (var item in data)
                 {
                     var val = new BigInteger(Convert.ToInt64(item));
-
                     num = BigInteger.ModPow(val, d, n);
 
-                    strBuilder.Append(_chars[(int)num]);
+                    strBuilder.Append((char)num);
                 }
 
                 return strBuilder.ToString();
