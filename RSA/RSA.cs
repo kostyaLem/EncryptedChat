@@ -138,7 +138,7 @@ namespace Encrypted
 
         private long GetPublicPartKey(long fi)
         {
-            long e = 3;
+            long e = fi - 1;
 
             while (true)
             {
@@ -146,7 +146,7 @@ namespace Encrypted
                     e < fi &&
                     BigInteger.GreatestCommonDivisor(new BigInteger(e), new BigInteger(fi)) == BigInteger.One)
                     break;
-                e++;
+                e--;
             }
 
             return e;
