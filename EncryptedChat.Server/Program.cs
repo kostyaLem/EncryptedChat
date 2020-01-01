@@ -1,7 +1,6 @@
 ﻿using EncryptedChat.Server.ClientModel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -31,12 +30,9 @@ namespace EncryptedChat.Server
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
-            {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
                     return ip;
-                }
-            }
+
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
@@ -44,8 +40,6 @@ namespace EncryptedChat.Server
         {
             try
             {
-                _listener.Server.ReceiveBufferSize = 1024 * 5;
-                _listener.Server.SendBufferSize = 1024 * 5;
                 _listener.Start();
             }
             catch (Exception e)
@@ -67,23 +61,18 @@ namespace EncryptedChat.Server
                         var bf = new BinaryFormatter();
                         var serverClient = new ServerClient();
 
-                        while (client.Connected)
+                        var conClient = bf.Deserialize(stream) as ConnectedClient;
+
+                        if (_clients.Exists(c => c.Login == conClient.Login))
                         {
-                            var conClient = bf.Deserialize(stream) as ConnectedClient;
-
-                            if (_clients.Exists(c => c.Login == conClient.Login))
-                            {
-                                // Write to console about it
-                            }
-                            else
-                            {
-                                serverClient = new ServerClient(client, conClient.ID, conClient.Login);
-                                _clients.Add(serverClient);
-                                WriteSignalAboutConnection(conClient);
-                                SendToAllClients(conClient);
-                            }
-
-                            break;
+                            // Write to console about it
+                        }
+                        else
+                        {
+                            serverClient = new ServerClient(client, conClient.ID, conClient.Login);
+                            _clients.Add(serverClient);
+                            WriteSignalAboutConnection(conClient);
+                            SendToAllClients(conClient);
                         }
 
                         while (client.Client.Connected)

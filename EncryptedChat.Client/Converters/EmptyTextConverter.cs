@@ -2,20 +2,17 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace EncryptedChat.Client
+namespace EncryptedChat.Client.Converters
 {
-    public class DateTimeConverter : IValueConverter
+    public class EmptyTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is null)
-                return default;
-
-            if (!(value is DateTime))
-                throw new ArgumentException(nameof(value));
-
-            var date = (DateTime)value;
-            return date.ToString("HH:mm:ss");                      
+            if (value is string str)
+            {
+                return !string.IsNullOrEmpty(str);
+            }
+            return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

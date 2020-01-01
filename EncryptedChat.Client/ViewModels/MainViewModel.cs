@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace EncryptedChat.Client.ViewModels
@@ -30,10 +31,17 @@ namespace EncryptedChat.Client.ViewModels
         public int RemoteN { get => remoteN; set { remoteN = value; OnPropertyChanged(); } }
         #endregion
 
-        public string Host { get; set; } = "192.168.11.1";
-        public int Port { get; set; } = 5050;
+        public string Host { get; set; }
+        public int Port { get; set; }
         public string Login { get; set; } = "kostyaLem";
-        public string Text { get; set; }
+        public string Text
+        {
+            get => _text; set
+            {
+                _text = value;
+                OnPropertyChanged();
+            }
+        }
 
         public bool Connected => RemoteE != 0 && RemoteN != 0 && _canConnect;
         public ObservableCollection<MessageItem> Messages { get; set; }
@@ -41,30 +49,27 @@ namespace EncryptedChat.Client.ViewModels
         private bool _canConnect = true;
         private int remoteE;
         private int remoteN;
+        private string _text;        
 
         public bool CanDisconnect { get; set; } = false;
 
-        public DelegateCommand SendMessageCommand { get; set; }
-        public DelegateCommand ConnectCommand { get; set; }
-        public DelegateCommand DisconnectCommand { get; set; }
+        public ICommand SendMessageCommand { get; set; }
+        public ICommand ConnectCommand { get; set; }
+        public ICommand DisconnectCommand { get; set; }        
 
-        public MainViewModel()
+        public MainViewModel(IPAddress host, int port)
         {
+            Host = host.ToString();
+            Port = port;            
+
             Messages = new ObservableCollection<MessageItem>();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             ConnectCommand = new DelegateCommand(Connect);
-            DisconnectCommand = new DelegateCommand(Fake);
-
-            Application.Current.MainWindow.Closing += MainWindow_Closing;
+            DisconnectCommand = new DelegateCommand(Dissconnect);
         }
 
-        private void MainWindow_Closing(object sender, CancelEventArgs e)
-        {
-            Fake();
-        }
-
-        private void Fake()
+        private void Dissconnect()
         {
             _tcpClient?.Close();
             _canConnect = true;
@@ -173,7 +178,6 @@ namespace EncryptedChat.Client.ViewModels
             }
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
-
 
         public void OnPropertyChanged(string name = "")
         {

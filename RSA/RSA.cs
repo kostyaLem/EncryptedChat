@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Text;
 
@@ -8,8 +7,6 @@ namespace Encrypted
 {
     public class RSA
     {
-        public List<char> _chars = new List<char>();
-
         private bool _isReady;
         private long local_D;
 
@@ -21,16 +18,6 @@ namespace Encrypted
         public RSA()
         {
             Initialize();
-            FillAlp();
-        }
-
-        private void FillAlp()
-        {
-            _chars.AddRange(Enumerable.Range('А', 'я' - 'А' + 1).Select(c => (char)c).ToArray());
-            _chars.AddRange(Enumerable.Range('A', 'Z' - 'A' + 1).Select(c => (char)c).ToArray());
-            _chars.AddRange(Enumerable.Range('a', 'z' - 'a' + 1).Select(c => (char)c).ToArray());
-            _chars.AddRange(Enumerable.Range('0', '9' - '0' + 1).Select(c => (char)c).ToArray());
-            _chars.AddRange(new char[] { '.', ',', '!', '?', '(', ')', '-', '@', '"', '\'', ';', ':', ' ' });
         }
 
         public void Initialize()
@@ -82,28 +69,8 @@ namespace Encrypted
             return data.ToArray();
         }
 
-        private static object sync = new object();
-
-        private string localDecode(string[] data)
-        {
-            var strBuilder = new StringBuilder();
-
-            BigInteger num;
-
-            foreach (var item in data)
-            {
-                var val = new BigInteger(Convert.ToInt64(item));
-                num = BigInteger.ModPow(val, e, n);
-                strBuilder.Append(_chars[(int)num]);
-            }
-
-            return strBuilder.ToString();
-        }
-
         private string Decode(string[] data, long d, long n)
         {
-            lock (sync)
-            {
                 var strBuilder = new StringBuilder();
 
                 BigInteger num;
@@ -117,7 +84,6 @@ namespace Encrypted
                 }
 
                 return strBuilder.ToString();
-            }
         }
 
         private long GetPrivatePartKey(long fi, long e)
