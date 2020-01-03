@@ -71,19 +71,19 @@ namespace Encrypted
 
         private string Decode(string[] data, long d, long n)
         {
-                var strBuilder = new StringBuilder();
+            var strBuilder = new StringBuilder();
 
-                BigInteger num;
+            BigInteger num;
 
-                foreach (var item in data)
-                {
-                    var val = new BigInteger(Convert.ToInt64(item));
-                    num = BigInteger.ModPow(val, d, n);
+            foreach (var item in data)
+            {
+                var val = new BigInteger(Convert.ToInt64(item));
+                num = BigInteger.ModPow(val, d, n);
 
-                    strBuilder.Append((char)num);
-                }
+                strBuilder.Append((char)num);
+            }
 
-                return strBuilder.ToString();
+            return strBuilder.ToString();
         }
 
         private long GetPrivatePartKey(long fi, long e)

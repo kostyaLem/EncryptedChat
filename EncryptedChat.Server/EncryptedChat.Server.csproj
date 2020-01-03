@@ -43,11 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="ClientModel\BaseClient.cs" />
     <Compile Include="ClientModel\ConnectedClient.cs" />
+    <Compile Include="ClientModel\Extensions.cs" />
     <Compile Include="ClientModel\ServerClient.cs" />
-    <Compile Include="EncryptedObject.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ClientModel\EncryptedObject.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,6 @@
-﻿using EncryptedChat.Server.ClientModel;
-using System;
+﻿using System;
 
-namespace EncryptedChat.Server
+namespace EncryptedChat.Server.ClientModel
 {
     [Serializable]
     public class EncryptedObject
@@ -34,18 +33,5 @@ namespace EncryptedChat.Server
         public string Content { get; set; }
         public DateTime SendTime { get; set; }
         public string Login { get; set; }
-    }
-
-    public static class Extensions
-    {
-        public static MessageItem MapEncObjToMessageItem(this EncryptedObject encObj, string text)
-        {
-            return new MessageItem()
-            {
-                Content = text,
-                Login = encObj.Client.Login,
-                SendTime = encObj.Message.SendTime
-            };
-        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Encrypted;
-using EncryptedChat.Server;
 using EncryptedChat.Server.ClientModel;
 using Prism.Commands;
 using System;
@@ -49,27 +48,27 @@ namespace EncryptedChat.Client.ViewModels
         private bool _canConnect = true;
         private int remoteE;
         private int remoteN;
-        private string _text;        
+        private string _text;
 
         public bool CanDisconnect { get; set; } = false;
 
         public ICommand SendMessageCommand { get; set; }
         public ICommand ConnectCommand { get; set; }
-        public ICommand DisconnectCommand { get; set; }        
+        public ICommand DisconnectCommand { get; set; }
 
         public MainViewModel(IPAddress host, int port)
         {
             Host = host.ToString();
-            Port = port;            
+            Port = port;
 
             Messages = new ObservableCollection<MessageItem>();
 
             SendMessageCommand = new DelegateCommand(SendMessage);
             ConnectCommand = new DelegateCommand(Connect);
-            DisconnectCommand = new DelegateCommand(Dissconnect);
+            DisconnectCommand = new DelegateCommand(Disconnect);
         }
 
-        private void Dissconnect()
+        private void Disconnect()
         {
             _tcpClient?.Close();
             _canConnect = true;
@@ -102,44 +101,52 @@ namespace EncryptedChat.Client.ViewModels
                     var bf = new BinaryFormatter();
                     bf.Serialize(_stream, _client);
 
-                    while (true)
+                    while (_tcpClient.Connected)
                     {
-                        if (_tcpClient.Connected)
+                        var serverObject = bf.Deserialize(_stream);
+
+                        if (serverObject is ConnectedClient conClient)
                         {
-                            var serverObject = bf.Deserialize(_stream);
+                            _canConnect = false;
+                            CanDisconnect = true;
 
-                            if (serverObject is ConnectedClient conClient)
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    _canConnect = false;
-                                    CanDisconnect = true;
-                                    OnPropertyChanged();
-                                }, DispatcherPriority.Background);
-                            }
-                            else if (serverObject is EncryptedObject encObj)
-                            {
-                                if (encObj.Client.Login == _client.Login)
-                                    continue;
+                                Messages.Add(new MessageItem() { Content = $"Новое подключение: {conClient.Login}", SendTime = DateTime.Now });
+                            });
 
+                            OnPropertyChanged();
+                        }
+                        else if (serverObject is EncryptedObject encObj)
+                        {
+                            if (encObj.Client.Login == _client.Login)
+                                continue;
+
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
                                 var text = _rsa.Decrypt(encObj.Message.Content);
-
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    Messages.Add(encObj.MapEncObjToMessageItem(text));
-                                }, DispatcherPriority.Background);
-                            }
+                                Messages.Add(encObj.MapEncObjToMessageItem(text));
+                            }, DispatcherPriority.Background);
                         }
                     }
                 }
                 catch (Exception e)
                 {
+                    ShowDisconnectMessage();
                     Console.WriteLine(e.Message);
                     _canConnect = true;
                     CanDisconnect = false;
                     OnPropertyChanged();
                 }
             }, TaskCreationOptions.LongRunning);
+        }
+
+        private void ShowDisconnectMessage()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Messages.Add(new MessageItem() { Content = "Соединение разоравно...", SendTime = DateTime.Now });
+            });
         }
 
         private void SendMessage()
@@ -170,12 +177,9 @@ namespace EncryptedChat.Client.ViewModels
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
-            {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
                     return ip;
-                }
-            }
+
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 

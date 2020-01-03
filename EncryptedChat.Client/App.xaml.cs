@@ -16,7 +16,7 @@ namespace EncryptedChat.Client
             if (e.Args.Length == 2 &&
                 IPAddress.TryParse(e.Args[0], out IPAddress host) &&
                 int.TryParse(e.Args[1], out int port))
-            {
+            {                
                 mainVM = new MainViewModel(host, port);
             }
             else
@@ -24,7 +24,7 @@ namespace EncryptedChat.Client
                 mainVM = new MainViewModel(GetLocalIPAddress(), 5050);
             }
             new MainWindow() { DataContext = mainVM }.ShowDialog();
-        }        
+        }
 
         private static IPAddress GetLocalIPAddress()
         {

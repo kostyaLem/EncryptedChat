@@ -9,38 +9,25 @@ using System.Threading.Tasks;
 
 namespace EncryptedChat.Server
 {
-    class Server
+    internal class Server
     {
-        static object _consoleObj = new object();
-
         static TcpListener _listener;
         static List<ServerClient> _clients;
 
-        static Server()
-        {
-            var host = GetLocalIPAddress();
-            var port = 5050;
-            Console.WriteLine($"Введите порт для прослушивания: {host}:{port}");
-
+        internal Server(IPAddress host, int port)
+        {            
             _listener = new TcpListener(host, 5050);
             _clients = new List<ServerClient>();
+
+            Console.WriteLine($"Создание сервера на: {host}:{port}");
         }
-
-        public static IPAddress GetLocalIPAddress()
-        {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    return ip;
-
-            throw new Exception("No network adapters with an IPv4 address in the system!");
-        }
-
-        static void Main(string[] args)
+         
+        public void Start()
         {
             try
             {
                 _listener.Start();
+                Console.WriteLine("Сервер запущен");
             }
             catch (Exception e)
             {
@@ -89,7 +76,7 @@ namespace EncryptedChat.Server
                                 if (client.Client.Poll(0, SelectMode.SelectRead))
                                 {
                                     var buff = new byte[1];
-                                    if (client.Client.Receive(buff, SocketFlags.Peek) == 0)
+                                    if (client.Client.Connected == false)
                                     {
                                         client.Client.Disconnect(true);
                                     }
@@ -151,23 +138,17 @@ namespace EncryptedChat.Server
 
         private static void WriteTextToConsole(EncryptedObject eObj)
         {
-            lock (_consoleObj)
-            {
                 Console.WriteLine($"{eObj.Client.Login} " +
                     $"[{eObj.Message.SendTime.ToString()}]: " +
                     $"{string.Join(" ", eObj.Message.Content)}");
-            }
         }
 
         private static void WriteSignalAboutConnection(ConnectedClient connectedClient)
         {
-            lock (_consoleObj)
-            {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"New connection: ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"{connectedClient.Login} - {connectedClient.Source}");
-            }
         }
     }
 }

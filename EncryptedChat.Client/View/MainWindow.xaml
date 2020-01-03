@@ -53,14 +53,14 @@
                     Height="22"
                     IsReadOnly="{Binding CanDisconnect}"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding RemoteE}" />
+                    Text="{Binding RemoteE, UpdateSourceTrigger=PropertyChanged}" />
                 <Label Content="n(B):" />
                 <TextBox
                     Width="80"
                     Height="22"
                     IsReadOnly="{Binding CanDisconnect}"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding RemoteN}" />
+                    Text="{Binding RemoteN, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <WrapPanel
                 HorizontalAlignment="Right"
@@ -95,7 +95,7 @@
                     Width="100"
                     Height="23"
                     Template="{StaticResource TextBoxBaseControlTemplate}"
-                    Text="{Binding Login}" />
+                    Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
             <StackPanel
@@ -171,7 +171,7 @@
                 Template="{StaticResource TextBoxBaseControlTemplate}"
                 Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" />
             <Button
-                Grid.Column="1"
+                Grid.Column="1" IsDefault="True"
                 Command="{Binding SendMessageCommand}"
                 IsEnabled="{Binding Text, Converter={StaticResource EmptyTextConverter}}"
                 Style="{StaticResource SendButton}" />
